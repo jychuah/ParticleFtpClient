@@ -51,11 +51,9 @@ int ParticleFtpClient::size(String filename) {
     return atoi(&cmd_response_buffer[4]);
 }
 
-tm ParticleFtpClient::mdtm(String filename) {
+bool ParticleFtpClient::mdtm(String filename, tm *mdtm_time) {
     server_cmd_connection.println("MDTM " + filename);
-    tm mdtm_time;
-    int result = parse_response();
-    if (result / 100 != 2) return mdtm_time;
+    expect(200);
     char yearstr[5] = { 0 };
     strncpy(yearstr, &cmd_response_buffer[4], 4);
     char monthstr[3] = { 0 };
@@ -68,13 +66,13 @@ tm ParticleFtpClient::mdtm(String filename) {
     strncpy(mmstr, &cmd_response_buffer[14], 2);
     char ssstr[3] = { 0 };
     strncpy(ssstr, &cmd_response_buffer[16], 2);
-    mdtm_time.tm_sec = atoi(ssstr);
-    mdtm_time.tm_min = atoi(mmstr);
-    mdtm_time.tm_hour = atoi(hhstr);
-    mdtm_time.tm_mday = atoi(daystr);
-    mdtm_time.tm_mon = atoi(monthstr);
-    mdtm_time.tm_year = atoi(yearstr);
-    return mdtm_time;
+    mdtm_time->tm_sec = atoi(ssstr);
+    mdtm_time->tm_min = atoi(mmstr);
+    mdtm_time->tm_hour = atoi(hhstr);
+    mdtm_time->tm_mday = atoi(daystr);
+    mdtm_time->tm_mon = atoi(monthstr);
+    mdtm_time->tm_year = atoi(yearstr);
+    return true;
 }
 
 String ParticleFtpClient::pwd() {
@@ -90,6 +88,10 @@ bool ParticleFtpClient::cwd(String dirname) {
 
 bool ParticleFtpClient::mkd(String dirname) {
     return simple_command("MKD " + dirname, 200);
+}
+
+bool ParticleFtpClient::rmd(String dirname) {
+    return simple_command("RMD " + dirname, 200);
 }
 
 bool ParticleFtpClient::type(String typestring) {
@@ -116,7 +118,7 @@ bool ParticleFtpClient::stor(String filename) {
     return pasv_command("STOR " + filename, 150);
 }
 
-bool ParticleFtpClient::stop() {
+bool ParticleFtpClient::finish() {
     data.stop();
     expect(200);
     return true;
@@ -134,6 +136,10 @@ bool ParticleFtpClient::simple_command(String cmd, int successCode) {
     server_cmd_connection.println(cmd);
     expect(successCode);
     return true;
+}
+
+String ParticleFtpClient::get_response() {
+    return String(cmd_response_buffer);
 }
 
 bool ParticleFtpClient::pasv_command(String cmd, int successCode) {
@@ -191,6 +197,8 @@ bool ParticleFtpClient::connect_data_port() {
     d_print(pasv_ip);
     d_print(":");
     d_println(pasv_vals[4] * 256 + pasv_vals[5]);
+    data.stop();
+    data.flush();
     data.connect(pasv_ip, pasv_vals[4] * 256 + pasv_vals[5]);
 
     if (!data.connected()) {
@@ -208,12 +216,15 @@ int ParticleFtpClient::parse_response() {
     while (tries < maxTries && !responded) {
         delay(1000);
         while (server_cmd_connection.available() && index < RESPONSE_BUFFER_SIZE) {
+            tries = 0;
             char val = server_cmd_connection.read();
             cmd_response_buffer[index++] = val;
             responded = index > 3;
             d_print(val);
         }
+        tries++;
     }
+    if (tries >= maxTries) d_println("Server timed out on response");
     d_println();
     if (!responded) return 0;
     char code_string[4] = { 0 };

@@ -29,9 +29,9 @@ class ParticleFtpClient {
         // Gets size of a filename, or -1 if an error occurs
         int size(String filename);
 
-        // Returns a tm struct of the last modified time
-        // of a file, or an empty tm struct if an error occurs
-        tm mdtm(String filename);
+        // Reads the modified date and time and stores it in the
+        // supplied tm struct. Returns true if successful.
+        bool mdtm(String filename, tm* mdtm_time);
 
         // Returns a String with the a response to the
         // "pwd" command, which prints the current working
@@ -47,6 +47,9 @@ class ParticleFtpClient {
 
         // Makes a new directory
         bool mkd(String dirname);
+
+        // Removes a directory
+        bool rmd(String dirname);
 
         // Sets the file tranfer type. Typical types are "A" for ASCII text or "I" for binary images
         bool type(String typestring);
@@ -81,7 +84,7 @@ class ParticleFtpClient {
 
         // Not an actual FTP command, but closes the data port after a STOR command
         // and returns true if the connection closed correctly
-        bool stop();
+        bool finish();
 
         // Retrieves the specified filename. Data can be read from the data TCPClient.
         // False will be returned if an error occured
@@ -94,11 +97,12 @@ class ParticleFtpClient {
         // are called and return true
         TCPClient data;
 
+        bool simple_command(String cmd, int successCode);
+        String get_response();
+        bool pasv_command(String cmd, int successCode);
+
     protected:
         TCPClient server_cmd_connection;
-
-        bool simple_command(String cmd, int successCode);
-        bool pasv_command(String cmd, int successCode);
 
         bool connect_data_port();
         int parse_response();

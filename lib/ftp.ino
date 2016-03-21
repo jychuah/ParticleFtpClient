@@ -1,30 +1,22 @@
 // This #include statement was automatically added by the Particle IDE.
 #include "ParticleFtpClient.h"
+#include <time.h>
+
+String hostname = "hostname";
+String username = "username";
+String password = "password";
+
+int timeout = 5;
 
 ParticleFtpClient ftp = ParticleFtpClient();
 
-void patientStream() {
-  // Stream data, allowing for a timeout of 3 seconds between
-  // continuity of the stream
-  int timeouts = 0;
+void readPasvStream() {
   int count = 0;
-  while(timeouts < 3) {
-    delay(1000);
-    if (ftp.data.connected() && ftp.data.available()) {
-      timeouts = 0;
-      while (ftp.data.available()) {
-        char c = ftp.data.read();
-        count++;
-        Serial.print(c);
-
-        // abort data stream after 1k of data
-        if (count > 1000) {
-          ftp.abor();
-          return;
-        }
-      }
-    } else {
-      timeouts++;
+  while (ftp.data.connected()) {
+    while (ftp.data.available()) {
+      char c = ftp.data.read();
+      count++;
+      Serial.print(c);
     }
   }
 }
@@ -34,15 +26,15 @@ void setup() {
     Serial.println("Hello world");
 
     // Connect to host and authenticate, or halt
-    if (!ftp.open("192.168.1.102", 5)) {
+    if (!ftp.open(hostname, timeout)) {
       Serial.println("Couldn't connect to ftp host");
       while (1);
     }
-    if (!ftp.user("jychuah")) {
+    if (!ftp.user(username)) {
       Serial.println("Bad username");
       while (1);
     }
-    if (!ftp.pass("r6vegas")) {
+    if (!ftp.pass(password)) {
       Serial.println("Bad password");
       while (1);
     }
@@ -52,7 +44,7 @@ void setup() {
       Serial.println("Unable to list files");
     } else {
       Serial.println("LIST *");
-      patientStream();
+      readPasvStream();
     }
 
     // Test directory commands
@@ -86,14 +78,74 @@ void setup() {
         ftp.data.write('a' + i);
       }
       ftp.data.flush();
-      if (!ftp.stop()) {
+      if (!ftp.finish()) {
         Serial.println("Couldn't stop file upload");
       }
     }
 
     // Test retrieving the file
+    Serial.println("RETR test.txt");
     if (!ftp.retr("test.txt")) {
-      patientStream();
+      Serial.println("Couldn't retrieve test.txt");
+    } else {
+      readPasvStream();
+      ftp.finish();
+      // Because the file is so small, we've probably already a received
+      // server response here, so this will timeout
     }
 
+    // Test getting modified time of file
+    Serial.println("MDTM test.txt");
+    tm mdtm;
+    if (!ftp.mdtm("test.txt", &mdtm)) {
+      Serial.println("Couldn't retrieve modified date/time of test.txt");
+    } else {
+      Serial.print("Modified date/time: ");
+      Serial.print(mdtm.tm_year);
+      Serial.print("/");
+      Serial.print(mdtm.tm_mon);
+      Serial.print("/");
+      Serial.print(mdtm.tm_mday);
+      Serial.print(" ");
+      Serial.print(mdtm.tm_hour);
+      Serial.print(":");
+      Serial.print(mdtm.tm_min);
+      Serial.print(":");
+      Serial.println(mdtm.tm_sec);
+    }
+
+    // Test deleting the file we made
+    Serial.println("DELE test.txt");
+    if (!ftp.dele("test.txt")) {
+      Serial.println("Couldn't delete file");
+    } else if (!ftp.list("test.txt")) {
+      Serial.println("Couldn't retrieve directory listing of test.txt");
+    } else {
+      Serial.println("LIST test.txt (Should be empty)");
+      readPasvStream();
+    }
+
+    // Test removing a directory
+    Serial.println("RMD ParticleFtpClient");
+    if (!ftp.rmd("ParticleFtpClient")) {
+      Serial.println("Couldn't remove directory ParticleFtpClient");
+    } else {
+      Serial.println("Success!");
+    }
+
+    // Test a custom FTP command
+    Serial.println("SYST");
+    if (!ftp.simple_command("SYST", 200)) {
+      Serial.println("That didn't work...");
+    } else {
+      Serial.println(ftp.get_response());
+    }
+
+    // Quit!
+    Serial.println("QUIT");
+    if (!ftp.quit()) {
+      Serial.println("Couldn't quit FTP");
+    } else {
+      Serial.println("Goodbye!");
+    }
 }
