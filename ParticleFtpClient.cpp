@@ -2,7 +2,7 @@
 #include "application.h"
 #include <time.h>
 
-#define PARTICLE_FTP_DEBUG
+// #define PARTICLE_FTP_DEBUG
 
 #ifdef PARTICLE_FTP_DEBUG
 #define d_print(message)        Serial.print(String(message))
