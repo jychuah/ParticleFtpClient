@@ -14,6 +14,12 @@ Most methods mirror FTP commands. To log into an FTP server, you must successive
 
 FTP can be a slow protocol. Therefore, the `open` method has a `timeout` parameter in integer seconds. Certain methods will timeout. I've tried to make the client as robust as possible, but occassionally things will happen "out of sequence" and you may wish to retry your ftp commands.
 
+### Passive Mode
+
+This library implements a passive mode client only. _TLDR, The server needs to support passive mode._
+
+In passive mode, any time the server needs to send or receive extensive data, the client will automatically send a PASV command. The server responds with a new port used for the data transfer. The sender of the data (either the client when uploading or server when downloading) stops the connection when the data transfer is finished and the port is discarded.
+
 ### Downloading Files
 
 Certain methods (`list`, `retr`) requires the use of a passive connection. Therefore, ParticleFTPClient exposes a public `TCPClient` member `data`. For methods that retrieve passive data (`list` and `retr`), you may reasonably expect server sent data as long as `data` remaines `connected`. For example:
