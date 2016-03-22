@@ -1,0 +1,7 @@
+{
+    "name": "ParticleFtpClient",
+    "version": "0.0.1",
+    "author": "Joon-Yee Chuah <jychuah@gmail.com>",
+    "license": "MIT License",
+    "description": "Passive mode FTP Client"
+}
