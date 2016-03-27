@@ -6,7 +6,7 @@
 
 #define RESPONSE_BUFFER_SIZE 270
 
-namespace ParticleFtpClient {
+namespace particleftpclient {
   class ParticleFtpClient {
       public:
           // Open a conncetion to hostname. Timeout is a global timeout that will

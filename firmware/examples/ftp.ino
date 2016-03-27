@@ -2,6 +2,8 @@
 #include "ParticleFtpClient.h"
 #include <time.h>
 
+using namespace particleftpclient;
+
 String hostname = "hostname";
 String username = "username";
 String password = "password";
