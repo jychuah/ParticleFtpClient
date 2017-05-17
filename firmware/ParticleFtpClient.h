@@ -3,7 +3,7 @@
 
 #include "application.h"
 #include <time.h>
-#define PARTICLE_FTP_DEBUG
+//#define PARTICLE_FTP_DEBUG
 #define RESPONSE_BUFFER_SIZE 270
 
 namespace particleftpclient {
