@@ -16,13 +16,13 @@ namespace particleftpclient {
 
   #define expect(code)            if (code / 100 != parse_response() / 100) return false;
 
-  bool ParticleFtpClient::open(String hostname, int timeout) {
+  bool ParticleFtpClient::open(String hostname, uint16_t port, int timeout) {
       maxTries = timeout;
   #ifdef PARTICLE_FTP_DEBUG
-      Serial.begin(9600);
+  //    Serial.begin(9600);
   #endif
       d_println("Connecting...");
-      server_cmd_connection.connect(hostname, 21);
+      server_cmd_connection.connect(hostname, port);
       if (!server_cmd_connection.connected()) {
           d_println("Failed to connect to command port");
           return false;

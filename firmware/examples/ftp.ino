@@ -7,6 +7,7 @@ using namespace particleftpclient;
 String hostname = "hostname";
 String username = "username";
 String password = "password";
+int port = 21;
 
 int timeout = 5;
 
@@ -28,7 +29,7 @@ void setup() {
     Serial.println("Hello world");
 
     // Connect to host and authenticate, or halt
-    if (!ftp.open(hostname, timeout)) {
+    if (!ftp.open(hostname, port, timeout)) {
       Serial.println("Couldn't connect to ftp host");
       while (1);
     }

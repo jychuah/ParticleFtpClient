@@ -3,7 +3,7 @@
 
 #include "application.h"
 #include <time.h>
-
+//#define PARTICLE_FTP_DEBUG
 #define RESPONSE_BUFFER_SIZE 270
 
 namespace particleftpclient {
@@ -12,7 +12,7 @@ namespace particleftpclient {
           // Open a conncetion to hostname. Timeout is a global timeout that will
           // be the number of seconds the client will wait for any
           // command to complete.
-          bool open(String hostname, int timeout);
+          bool open(String hostname, uint16_t port, int timeout);
 
           // Sends a username, returns true if the username was accepted
           bool user(String username);
