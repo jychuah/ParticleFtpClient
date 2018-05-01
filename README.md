@@ -1,58 +1,61 @@
-# ParticleFtpClient
+# ParticleFTPClient
 
-A library for Particle.io platform devices to perform simple FTP commands.
+A Particle library for ParticleFTPClient
 
-### Usage
+## Welcome to your library!
 
-```
-ParticleFtpClient ftp;
-```
+To get started, modify the sources in [src](src). Rename the example folder inside [examples](examples) to a more meaningful name and add additional examples in separate folders.
 
-Most methods mirror FTP commands. To log into an FTP server, you must successively call `ftp.open("hostname", timeout)`, `ftp.user("username")` and `ftp.pass("password")`. Each should return true.
+To compile your example you can use `particle compile examples/usage` command in [Particle CLI](https://docs.particle.io/guide/tools-and-features/cli#update-your-device-remotely) or use our [Desktop IDE](https://docs.particle.io/guide/tools-and-features/dev/#compiling-code).
 
-### Timeouts
+Libraries can also depend on other libraries. To add a dependency use [`particle library add`](https://docs.particle.io/guide/tools-and-features/cli#adding-a-library) or [library management](https://docs.particle.io/guide/tools-and-features/dev/#managing-libraries) in Desktop IDE.
 
-FTP can be a slow protocol. Therefore, the `open` method has a `timeout` parameter in integer seconds. Certain methods will timeout. I've tried to make the client as robust as possible, but occassionally things will happen "out of sequence" and you may wish to retry your ftp commands.
+After the library is done you can upload it with `particle library upload` or `Upload` command in the IDE. This will create a private (only visible by you) library that you can use in other projects. If you wish to make your library public, use `particle library publish` or `Publish` command.
 
-### Passive Mode
+_TODO: update this README_
 
-This library implements a passive mode client only. _TLDR, The server needs to support passive mode._
+## Usage
 
-In passive mode, any time the server needs to send or receive extensive data, the client will automatically send a PASV command. The server responds with a new port used for the data transfer. The sender of the data (either the client when uploading or server when downloading) stops the connection when the data transfer is finished and the port is discarded.
-
-### Downloading Files
-
-Certain methods (`list`, `retr`) requires the use of a passive connection. Therefore, ParticleFTPClient exposes a public `TCPClient` member `data`. For methods that retrieve passive data (`list` and `retr`), you may reasonably expect server sent data as long as `data` remaines `connected`. For example:
+Connect XYZ hardware, add the ParticleFTPClient library to your project and follow this simple example:
 
 ```
-// Initiate a download
-ftp.retr("download.txt");
-// While the connection remains open, the server still intends to send data.
-while (ftp.data.connected()) {
-  // Read what data is in the current packet
-  while (ftp.data.available()) {
-    // get another byte
-    char c = ftp.data.read();
-  }
+#include "ParticleFTPClient.h"
+ParticleFTPClient particleFTPClient;
+
+void setup() {
+  particleFTPClient.begin();
+}
+
+void loop() {
+  particleFTPClient.process();
 }
 ```
 
-### Uploading Files
+See the [examples](examples) folder for more details.
 
-The `stor` method allows a file upload, using the `data` member. Call `finish` when you are done uploading. It will `stop` the `data` connection and flush any server responses. (There may be a timeout here.) For example:
+## Documentation
 
-```
-// Set the file type to ASCII
-ftp.type("A"); 
-// Initiate an upload
-ftp.stor("upload.txt");
-for (int i = 0; i < strlen(data); i++) {
-  ftp.data.write(data[i]);
-}
-// Call finish when you are done uploading. You may expect a timeout here.
-ftp.finish();
-```
+TODO: Describe `ParticleFTPClient`
 
-### Debugging
+## Contributing
 
-If you want verbose serial output for server responses, uncomment `#define PARTICLE_FTP_DEBUG` in `ParticleFtpClient.cpp`
+Here's how you can make changes to this library and eventually contribute those changes back.
+
+To get started, [clone the library from GitHub to your local machine](https://help.github.com/articles/cloning-a-repository/).
+
+Change the name of the library in `library.properties` to something different. You can add your name at then end.
+
+Modify the sources in <src> and <examples> with the new behavior.
+
+To compile an example, use `particle compile examples/usage` command in [Particle CLI](https://docs.particle.io/guide/tools-and-features/cli#update-your-device-remotely) or use our [Desktop IDE](https://docs.particle.io/guide/tools-and-features/dev/#compiling-code).
+
+After your changes are done you can upload them with `particle library upload` or `Upload` command in the IDE. This will create a private (only visible by you) library that you can use in other projects. Do `particle library add ParticleFTPClient_myname` to add the library to a project on your machine or add the ParticleFTPClient_myname library to a project on the Web IDE or Desktop IDE.
+
+At this point, you can create a [GitHub pull request](https://help.github.com/articles/about-pull-requests/) with your changes to the original library. 
+
+If you wish to make your library public, use `particle library publish` or `Publish` command.
+
+## LICENSE
+Copyright 2018 Joon-Yee Chuah
+
+Licensed under the <insert your choice of license here> license
